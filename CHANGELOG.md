@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bug Fix: Raise error when primary keys in Ecto struct are nils. This prevents cases when dataloader is loading incorrect associations because of lack of primary key available. ([#177](https://github.com/absinthe-graphql/dataloader/pull/177))
+
 ## v2.0.1 2024-09-04
 
 - Bug Fix: Revert undesirable lateral ([#171](https://github.com/absinthe-graphql/dataloader/pull/171))
