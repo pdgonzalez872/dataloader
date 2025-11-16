@@ -529,8 +529,8 @@ count = Dataloader.get(loader, :posts, {:one, Post}, post_count: user1)
 ## 10. Pagination
 
 Pagination with Dataloader is all about controlling the number of results returned
-using **`limit`** and **`offset`** (or cursors). These parameters are passed through
-the batch key to your query function.
+using **`limit`** and **`offset`**. These parameters are passed through the batch key
+to your query function.
 
 ### Example Schema: Comments
 
@@ -756,8 +756,6 @@ end)
 ```
 
 **Note:** Each post gets its own query because each needs a separate LIMIT.
-For truly efficient batching with per-parent limits, you can use SQL window functions
-in a custom `run_batch/5` function.
 
 ### Combining LIMIT with Other Parameters
 
@@ -808,13 +806,10 @@ comments = Dataloader.get(loader, :content,
 
 ### Other Pagination Approaches
 
-While `limit` and `offset` cover most use cases, there are alternatives:
+While `limit` and `offset` cover most use cases, other approaches exist:
 
-**Cursor-Based Pagination:** Instead of using offset, you can use cursors (based on ID or timestamp) with `limit`. This is faster for deep pagination (offset 10000 is slow, cursors stay fast) and better for infinite scroll. Commonly used in GraphQL Relay APIs.
-
-**Window Functions:** For per-parent limits with efficient batching, use SQL `ROW_NUMBER()` in a custom `run_batch/5` function.
-
-See the Dataloader Ecto documentation for advanced pagination techniques.
+- **Cursor-Based Pagination** - Uses cursors instead of offsets
+- **Window Functions** - SQL techniques for efficient per-parent limits
 
 ---
 
@@ -848,7 +843,7 @@ loader |> Dataloader.load(:db, {Comment, %{offset: 0, limit: 10}}, ...)
 loader |> Dataloader.load(:db, {Comment, %{offset: 10000, limit: 10}}, ...)
 ```
 
-For large offsets (> 1000), prefer cursor-based pagination.
+**Note:** Large offsets (> 1000) can cause performance issues as the database must scan and skip many rows.
 
 **3. Per-Parent LIMIT and Batching**
 
@@ -865,9 +860,6 @@ end)
 # Each post gets UP TO 10 comments
 # Post 1: 10 comments, Post 2: 3 comments, Post 3: 10 comments, etc.
 ```
-
-**Note:** For advanced cases where you need per-parent limits with efficient batching,
-you can use SQL window functions (ROW_NUMBER) in a custom `run_batch/5` function.
 
 **4. Caching Implications of LIMIT/OFFSET**
 
@@ -925,7 +917,7 @@ This is useful for showing "Showing 10 of 247 comments" type information.
 ❌ **DON'T:**
 - **Forget the batch key must match**: `load` and `get` must use identical params
 - **Use different limits unnecessarily**: Fragments batching opportunities
-- **Use very large offsets**: Offset 10000+ is slow (consider cursors for deep pagination)
+- **Use very large offsets**: Offset 10000+ is slow due to database having to scan many rows
 - **Paginate in Elixir after loading**: Let the database handle it with LIMIT/OFFSET
 - **Forget to order results**: LIMIT without ORDER BY gives unpredictable results
 
