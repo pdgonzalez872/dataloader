@@ -77,7 +77,8 @@ defmodule Dataloader.Mixfile do
       extras: [
         "CHANGELOG.md",
         "README.md",
-        "guides/telemetry.md"
+        "guides/telemetry.md",
+        "guides/starting_out.md",
       ],
       main: "readme",
       source_url: @source_url,

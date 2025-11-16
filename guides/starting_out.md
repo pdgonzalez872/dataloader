@@ -47,7 +47,21 @@ end)
 With Dataloader:
 ```elixir
 # GOOD: 2 queries total (1 for posts + 1 for all authors)
-# Dataloader batches all author lookups into a single query
+posts = Repo.all(Post)
+
+# Set up Dataloader
+loader =
+  Dataloader.new()
+  |> Dataloader.add_source(:db, Dataloader.Ecto.new(Repo))
+  |> Dataloader.load_many(:db, User, Enum.map(posts, & &1.user_id))
+  |> Dataloader.run()
+
+# Now get all the authors (already loaded!)
+Enum.map(posts, fn post ->
+  author = Dataloader.get(loader, :db, User, post.user_id)
+  "#{post.title} by #{author.name}"
+end)
+# Dataloader batched all 100 author lookups into a SINGLE query!
 ```
 
 ### When to Use Dataloader
