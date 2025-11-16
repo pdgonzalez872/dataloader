@@ -50,17 +50,21 @@ With Dataloader:
 posts = Repo.all(Post)
 
 # Set up Dataloader
-loader =
-  Dataloader.new()
-  |> Dataloader.add_source(:db, Dataloader.Ecto.new(Repo))
-  |> Dataloader.load_many(:db, User, Enum.map(posts, & &1.user_id))
-  |> Dataloader.run()
+source_name = :db # Give it a name (can be any atom)
+source = Dataloader.Ecto.new(Repo) # Create a source for loading from DB
 
-# Now get all the authors (already loaded!)
+loader =
+  Dataloader.new() # Create the loader
+  |> Dataloader.add_source(source_name, source) # Register the source
+  |> Dataloader.load_many(source_name, User, Enum.map(posts, & &1.user_id))
+  |> Dataloader.run() # Execute all batched queries NOW
+
+# Now get all the authors (already loaded, no new queries!)
 Enum.map(posts, fn post ->
-  author = Dataloader.get(loader, :db, User, post.user_id)
+  author = Dataloader.get(loader, source_name, User, post.user_id)
   "#{post.title} by #{author.name}"
 end)
+
 # Dataloader batched all 100 author lookups into a SINGLE query!
 ```
 
@@ -84,10 +88,10 @@ L **Don't use Dataloader when:**
 ### The Dataloader Workflow (4 Steps)
 
 ```
-1. CREATE   ? Set up a loader with sources
-2. LOAD     ? Tell it what data you'll need
-3. RUN      ? Execute all batches concurrently
-4. GET      ? Retrieve the loaded data
+1. CREATE -> Set up a loader with sources
+2. LOAD -> Tell it what data you'll need
+3. RUN -> Execute all batches concurrently
+4. GET -> Retrieve the loaded data
 ```
 
 ### Key Terms
