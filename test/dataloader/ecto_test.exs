@@ -477,6 +477,20 @@ defmodule Dataloader.EctoTest do
     end
   end
 
+  test "when a primary key value is nil it raises an error", %{loader: loader} do
+    %User{username: "Robert Lewandowski"} |> Repo.insert!()
+
+    user_with_nil_id =
+      from(u in User, select: [:username], where: u.username == "Robert Lewandowski")
+      |> Repo.one()
+
+    assert_raise RuntimeError, ~r/Key :id is nil for record/, fn ->
+      loader
+      |> Dataloader.load(Test, :posts, user_with_nil_id)
+      |> Dataloader.run()
+    end
+  end
+
   test "when dataloader times out it raises an error" do
     user =
       %User{username: "Ben Wilson"}

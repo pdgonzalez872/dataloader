@@ -519,7 +519,12 @@ if Code.ensure_loaded?(Ecto) do
             |> :erlang.term_to_iovec()
             |> :erlang.md5()
           else
-            Enum.map(primary_keys, &Map.get(record, &1))
+            Enum.map(primary_keys, fn key ->
+              case Map.get(record, key) do
+                nil -> raise "Key #{inspect(key)} is nil for record #{inspect(record)}."
+                value -> value
+              end
+            end)
           end
 
         queryable = chase_down_queryable([assoc_field], schema)
