@@ -450,8 +450,8 @@ defmodule Dataloader.EctoTest do
       user = %User{username: "Test User"} |> Repo.insert!()
 
       # This seems odd, but we set ids on purpose here since our query sorts by
-      # them This is to show how the order returned below is not based on
-      # anything other than the id
+      # them. This is to show how the order returned below is not based on
+      # anything other than the sorted id
       post3 = %Post{id: 3, user_id: user.id, title: "Third Post"} |> Repo.insert!()
       post2 = %Post{id: 2, user_id: user.id, title: "Second Post"} |> Repo.insert!()
       post1 = %Post{id: 1, user_id: user.id, title: "First Post"} |> Repo.insert!()
