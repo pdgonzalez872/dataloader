@@ -445,7 +445,28 @@ defmodule Dataloader.EctoTest do
     end
   end
 
-  describe "has_many through" do
+  describe "has_many" do
+    test "order_by works for has_many associations", %{loader: loader} do
+      user = %User{username: "Test User"} |> Repo.insert!()
+
+      # This seems odd, but we set ids on purpose here since our query sorts by
+      # them This is to show how the order returned below is not based on
+      # anything other than the id
+      post3 = %Post{id: 3, user_id: user.id, title: "Third Post"} |> Repo.insert!()
+      post2 = %Post{id: 2, user_id: user.id, title: "Second Post"} |> Repo.insert!()
+      post1 = %Post{id: 1, user_id: user.id, title: "First Post"} |> Repo.insert!()
+
+      loader =
+        loader
+        |> Dataloader.load(Test, :posts, user)
+        |> Dataloader.run()
+
+      posts = Dataloader.get(loader, Test, :posts, user)
+
+      # Post query uses order_by(asc: :id), so we get the ascending order
+      assert Enum.map(posts, & &1.id) == [post1.id, post2.id, post3.id]
+    end
+
     test "order_by works for has_many through associations", %{loader: loader} do
       user = %User{username: "Test User"} |> Repo.insert!()
 
