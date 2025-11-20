@@ -6,5 +6,6 @@ defmodule Dataloader.Like do
     belongs_to(:post, Dataloader.Post, where: [status: "published"])
     belongs_to(:picture, Dataloader.Picture)
     field(:status, :string)
+    field(:inserted_at, :utc_datetime_usec)
   end
 end

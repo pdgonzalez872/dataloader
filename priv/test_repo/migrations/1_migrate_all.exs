@@ -39,6 +39,7 @@ defmodule Dataloader.Ecto.TestRepo.Migrations.MigrateAll do
       add :post_id, references(:posts)
       add :picture_id, references(:pictures)
       add :status, :string
+      add :inserted_at, :utc_datetime_usec
     end
 
     create table(:countries) do

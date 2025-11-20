@@ -47,6 +47,12 @@ defmodule Dataloader.EctoTest do
         end).()
   end
 
+  defp query(Like, _args, test_pid) do
+    send(test_pid, :querying)
+
+    order_by(Like, [l], desc: l.inserted_at)
+  end
+
   defp query(queryable, _args, test_pid) do
     send(test_pid, :querying)
     queryable
@@ -405,8 +411,18 @@ defmodule Dataloader.EctoTest do
 
       post = %Post{user_id: user.id} |> Repo.insert!()
       _score = %Score{post_id: post.id, leaderboard_id: leaderboard.id} |> Repo.insert!()
-      _like1 = %Like{post_id: post.id, user_id: user.id} |> Repo.insert!()
-      _like2 = %Like{post_id: post.id, user_id: user.id} |> Repo.insert!()
+
+      like1 =
+        %Like{post_id: post.id, user_id: user.id, inserted_at: DateTime.utc_now()}
+        |> Repo.insert!()
+
+      like2 =
+        %Like{
+          post_id: post.id,
+          user_id: user.id,
+          inserted_at: DateTime.add(DateTime.utc_now(), 1, :second)
+        }
+        |> Repo.insert!()
 
       loader =
         loader
@@ -424,6 +440,8 @@ defmodule Dataloader.EctoTest do
 
       assert length(loaded_posts) == 1
       assert length(loaded_likes) == 2
+
+      assert Enum.map(loaded_likes, & &1.id) == [like2.id, like1.id]
     end
   end
 
