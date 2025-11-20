@@ -445,6 +445,39 @@ defmodule Dataloader.EctoTest do
     end
   end
 
+  describe "has_many through" do
+    test "order_by works for has_many through associations", %{loader: loader} do
+      user = %User{username: "Test User"} |> Repo.insert!()
+
+      [like1_id, like2_id] =
+        Enum.with_index(["A", "B"], fn title, index ->
+          {:ok, post} = Repo.insert(%Post{user_id: user.id, title: title})
+
+          {:ok, like} =
+            Repo.insert(%Like{
+              user_id: user.id,
+              post_id: post.id,
+              inserted_at: DateTime.add(DateTime.utc_now(), index, :second)
+            })
+
+          like.id
+        end)
+
+      # assoc set up as ->
+      #   schema "users" do
+      #   has_many(:posts_likes, through: [:posts, :likes])
+
+      loader =
+        loader
+        |> Dataloader.load(Test, :posts_likes, user)
+        |> Dataloader.run()
+
+      likes = Dataloader.get(loader, Test, :posts_likes, user)
+
+      assert Enum.map(likes, & &1.id) == [like2_id, like1_id]
+    end
+  end
+
   test "preloads aren't used", %{loader: loader} do
     user = %User{username: "Ben Wilson"} |> Repo.insert!()
 

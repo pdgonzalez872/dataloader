@@ -5,6 +5,7 @@ defmodule Dataloader.User do
     field(:username, :string)
     has_many(:posts, Dataloader.Post)
     has_many(:published_posts, Dataloader.Post, where: [status: "published"])
+    has_many(:posts_likes, through: [:posts, :likes])
     has_many(:published_posts_likes, through: [:published_posts, :likes])
     belongs_to(:leaderboard, Dataloader.Leaderboard)
 
