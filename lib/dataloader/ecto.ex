@@ -702,8 +702,14 @@ if Code.ensure_loaded?(Ecto) do
         empty = schema |> struct |> Map.fetch!(field)
         records = records |> Enum.map(&Map.put(&1, field, empty))
 
+        is_through_assoc? =
+          case schema.__schema__(:association, field) do
+            %Ecto.Association.HasThrough{} -> true
+            _ -> false
+          end
+
         results =
-          if query.limit || query.offset do
+          if query.limit || query.offset || is_through_assoc? do
             records
             |> preload_lateral(field, query, source.repo, repo_opts)
           else
